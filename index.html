@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login + Music Player</title>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+body{
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f6f6f6;
+}
+
+/* LOGIN PAGE */
+#login-box{
+    width: 330px;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0px 10px 30px rgba(0,0,0,.2);
+    text-align: center;
+}
+#login-box input{
+    width: 90%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid gray;
+}
+#login-box button{
+    width: 70%;
+    padding: 12px;
+    margin-top: 12px;
+    background: #ff5f8d;
+    border-radius: 10px;
+    border: none;
+    color: white;
+    font-size: 16px;
+}
+.err{
+    margin-top: 8px;
+    color: red;
+}
+
+/* MUSIC PLAYER */
+#player-box{
+    display: none;
+    width: 25%;
+    height: 92vh;
+    background: rgb(251, 135, 153);
+    border-radius: 20px;
+    box-shadow: 0px 20px 50px rgba(0, 0, 0,.5);
+    text-align: center;
+    padding-top: 20px;
+    overflow-y: auto;
+}
+#player-box img{
+    width: 80%;
+    height: 50%;
+    margin-top: 20px;
+    border-radius: 20px;
+}
+button{
+    padding: 20px;
+    border-radius: 50%;
+    margin: 10px;
+    background: transparent;
+    border: none;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0,.5),
+                -1px -1px 1px white;
+    cursor:pointer;
+}
+button:hover{
+    box-shadow: inset 5px 5px 10px rgba(0, 0, 0,.5),
+                 1px 1px 1px white;
+}
+input[type=range]{
+    width: 80%;
+    margin-top: 20px;
+}
+
+/* Song list */
+#song-list {
+    margin-top: 20px;
+    text-align: left;
+    width: 90%;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+}
+#song-list ul{
+    list-style: none;
+    padding:0;
+    margin:0;
+}
+#song-list li{
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+#song-list li:hover{
+    background: #ff5f8d;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="login-box">
+    <h2>Music App Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p class="err" id="error"></p>
+</div>
+
+<!-- MUSIC PLAYER -->
+<div id="player-box">
+    <h2>Music Player</h2>
+    <img id="track_image" src="">
+
+    <h3 id="title">Song Title</h3>
+    <marquee id="artist">Artist Name</marquee>
+
+    <input type="range" id="duration_slider" min="0" max="100" value="0" onclick="change_duration()">
+
+    <br><br>
+    <button onclick="previous_song()"><i class="fa fa-step-backward"></i></button>
+    <button onclick="justplay()" id="play"><i class="fa fa-play"></i></button>
+    <button onclick="next_song()"><i class="fa fa-step-forward"></i></button>
+
+    <!-- Dynamic Song List -->
+    <div id="song-list">
+        <h4>Song List</h4>
+        <ul id="songs"></ul>
+    </div>
+</div>
+
+<script>
+function login() {
+    let user = document.getElementById("username").value;
+    let pass = document.getElementById("password").value;
+
+    if(user === "admin" && pass === "1234"){
+        document.getElementById("login-box").style.display = "none";
+        document.getElementById("player-box").style.display = "block";
+    }
+    else{
+        document.getElementById("error").innerHTML = "Wrong username or password!";
+    }
+}
+
+let play = document.querySelector('#play');
+let title = document.querySelector('#title');
+let artist = document.querySelector('#artist');
+let slider = document.querySelector('#duration_slider');
+let track_image = document.querySelector('#track_image');
+let songListContainer = document.getElementById('songs');
+
+let index_no = 0;
+let playing_song = false;
+
+let track = document.createElement('audio');
+
+let All_song = [
+    {name:"OORUM BLOOD🍒", path:"music/song1.mp3", image:"image/png1.jpg", artist:"PRADEEP RANGANTHAN FROM DUDE"},
+    {name:"SIDU SIDU🍂", path:"music/song2.mp3", image:"image/png2.jpg", artist:"VIJAY ANTONY FROM ROMEO"},
+    {name:"PARIMITHA NERAM🦋", path:"music/song3.mp3", image:"image/png3.jpg", artist:"JOJU GEORGE FROM MADHURAM"},
+    {name:"MONICA💃🏻", path:"music/song4.mp3", image:"image/png4.jpg", artist:"POOJA HEGDE FROM COOLI"},
+    {name:"NIRA💗", path:"music/song5.mp3", image:"image/png5.jpg", artist:"SIDDHARTH FROM TAKKAR"},
+    {name:"AVAL🌸", path:"music/song6.mp3", image:"image/png6.jpg", artist:"UDHAYANIDHI FROM MANITHAN"},
+    {name:"BAE🧸", path:"music/song7.mp3", image:"image/png7.jpg", artist:"SIVAKARTHIKEYAN FROM DON"},
+    ];
+
+// Load track
+function load_track(index_no){
+    slider.value = 0;
+    track.src = All_song[index_no].path;
+    title.innerHTML = All_song[index_no].name;
+    track_image.src = All_song[index_no].image;
+    artist.innerHTML = All_song[index_no].artist;
+}
+
+// Play / Pause functions
+function justplay(){
+    if(playing_song == false){ playsong(); }
+    else{ pausesong(); }
+}
+function playsong(){
+    track.play();
+    playing_song = true;
+    play.innerHTML = '<i class="fa fa-pause"></i>';
+}
+function pausesong(){
+    track.pause();
+    playing_song = false;
+    play.innerHTML = '<i class="fa fa-play"></i>';
+}
+
+// Next / Previous
+function next_song(){
+    index_no = (index_no + 1) % All_song.length;
+    load_track(index_no);
+    playsong();
+}
+function previous_song(){
+    index_no = (index_no - 1 + All_song.length) % All_song.length;
+    load_track(index_no);
+    playsong();
+}
+
+// Slider
+function change_duration(){
+    let pos = track.duration * (slider.value / 100);
+    track.currentTime = pos;
+}
+
+function range_slider(){
+    if(!isNaN(track.duration)){
+        slider.value = track.currentTime * (100 / track.duration);
+    }
+}
+
+// Dynamic Song List
+function displaySongList() {
+    songListContainer.innerHTML = '';
+    All_song.forEach((song, index) => {
+        let li = document.createElement('li');
+        li.textContent = song.name + " - " + song.artist;
+
+        li.addEventListener('click', () => {
+            index_no = index;
+            load_track(index_no);
+            playsong();
+        });
+
+        songListContainer.appendChild(li);
+    });
+}
+
+// Initial Load
+load_track(index_no);
+displaySongList();
+setInterval(range_slider, 1000);
+
+</script>
+</body>
+</html>
